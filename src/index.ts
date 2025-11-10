@@ -1,21 +1,18 @@
 import Koa from "koa";
-import Router from "@koa/router";
+import { errorMiddleware } from "./middlewares/error.ts";
+import { loggerMiddleware } from "./middlewares/logger.ts";
+import api from "./routes/index.ts";
 
 const app = new Koa();
-const router = new Router();
 
-router.get("/", (ctx) => {
-  ctx.body = { msg: "root" };
-});
+// 全局中间件
+app.use(errorMiddleware);
+app.use(loggerMiddleware);
 
-router.get("/ping", (ctx) => {
-  ctx.body = { pong: true };
-});
+// 路由
+app.use(api.routes());
+app.use(api.allowedMethods());
 
-// 注册路由中间件
-app.use(router.routes());
-app.use(router.allowedMethods());
-
-app.listen(3000, () => {
-  console.log("http://localhost:3000");
-});
+// 监听
+const PORT = Number(process.env.PORT ?? 3000);
+app.listen(PORT, () => console.log(`http://localhost:${PORT}`));
